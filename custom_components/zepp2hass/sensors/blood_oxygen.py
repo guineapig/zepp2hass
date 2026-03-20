@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
+from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import PERCENTAGE
 
 from .base import ZeppSensorBase
@@ -34,6 +35,7 @@ class BloodOxygenSensor(ZeppSensorBase):
             icon="mdi:water-percent",
             unit=PERCENTAGE,
         )
+        self._attr_state_class = SensorStateClass.MEASUREMENT
 
     def _get_readings(self) -> list[dict[str, Any]]:
         """Get blood oxygen readings list.

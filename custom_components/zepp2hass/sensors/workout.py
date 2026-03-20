@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
+from homeassistant.components.sensor import SensorStateClass
+
 from .base import ZeppSensorBase
 from .formatters import (
     format_sport_type,
@@ -44,6 +46,7 @@ class WorkoutStatusSensor(ZeppSensorBase):
             unit="points",
             device_info=device_info,
         )
+        self._attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
     def available(self) -> bool:
@@ -162,6 +165,7 @@ class WorkoutHistorySensor(ZeppSensorBase):
             unit="workouts",
             device_info=device_info,
         )
+        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
 
     @property
     def available(self) -> bool:

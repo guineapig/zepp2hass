@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
+from homeassistant.components.sensor import SensorStateClass
+
 from .base import ZeppSensorBase
 
 if TYPE_CHECKING:
@@ -34,6 +36,7 @@ class PAISensor(ZeppSensorBase):
             icon="mdi:chart-bubble",
             unit="points",
         )
+        self._attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
     def available(self) -> bool:

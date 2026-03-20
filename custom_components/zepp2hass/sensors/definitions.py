@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import NamedTuple, Final
 
-from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import (
     PERCENTAGE,
@@ -43,6 +43,7 @@ class SensorDef(NamedTuple):
     formatter: str | None = None
     category: EntityCategory | None = None
     device_class: SensorDeviceClass | None = None
+    state_class: SensorStateClass | None = None
 
 
 class SensorWithTargetDef(NamedTuple):
@@ -69,6 +70,7 @@ class SensorWithTargetDef(NamedTuple):
     icon: str | None = None
     formatter: str | None = None
     device_class: SensorDeviceClass | None = None
+    state_class: SensorStateClass | None = None
 
 
 # =============================================================================
@@ -109,6 +111,7 @@ _DIAGNOSTIC_SENSORS: Final[list[SensorDef]] = [
         unit=PERCENTAGE,
         icon="mdi:brightness-6",
         category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 ]
 
@@ -123,6 +126,7 @@ _BATTERY_SENSORS: Final[list[SensorDef]] = [
         unit=PERCENTAGE,
         icon="mdi:battery",
         device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 ]
 
@@ -138,6 +142,7 @@ _HEALTH_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:thermometer",
         formatter="format_body_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="stress.current.value",
@@ -145,6 +150,7 @@ _HEALTH_SENSORS: Final[list[SensorDef]] = [
         name="Stress",
         unit="points",
         icon="mdi:emoticon-sad-outline",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 ]
 
@@ -159,6 +165,7 @@ _ACTIVITY_SENSORS: Final[list[SensorDef]] = [
         unit=UnitOfLength.METERS,
         icon="mdi:map-marker-distance",
         device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
 ]
 
@@ -172,6 +179,7 @@ _HEART_RATE_SENSORS: Final[list[SensorDef]] = [
         name="Heart Rate",
         unit="bpm",
         icon="mdi:heart-pulse",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="heart_rate.resting",
@@ -179,6 +187,7 @@ _HEART_RATE_SENSORS: Final[list[SensorDef]] = [
         name="Heart Rate Resting",
         unit="bpm",
         icon="mdi:heart",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="heart_rate.summary.maximum.hr_value",
@@ -186,6 +195,7 @@ _HEART_RATE_SENSORS: Final[list[SensorDef]] = [
         name="Heart Rate Max",
         unit="bpm",
         icon="mdi:heart-flash",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 ]
 
@@ -199,6 +209,7 @@ _SLEEP_SENSORS: Final[list[SensorDef]] = [
         name="Sleep Score",
         unit="points",
         icon="mdi:sleep",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="sleep.info.startTime",
@@ -223,6 +234,7 @@ _SLEEP_SENSORS: Final[list[SensorDef]] = [
         unit=UnitOfTime.MINUTES,
         icon="mdi:weather-night",
         device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="sleep.info.totalTime",
@@ -231,6 +243,7 @@ _SLEEP_SENSORS: Final[list[SensorDef]] = [
         unit=UnitOfTime.MINUTES,
         icon="mdi:clock-outline",
         device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 ]
 
@@ -255,6 +268,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:speedometer",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.avg_speed.parsed",
@@ -264,6 +278,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:speedometer-medium",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.pace.parsed",
@@ -272,6 +287,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         unit="min/km",
         icon="mdi:timer-sand",
         formatter="format_session_metric",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.avg_pace.parsed",
@@ -280,6 +296,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         unit="min/km",
         icon="mdi:timer-sand",
         formatter="format_session_metric",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.distance.parsed",
@@ -289,6 +306,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:map-marker-distance",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorDef(
         json_path="workout_session.duration.parsed",
@@ -298,6 +316,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:timer-outline",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorDef(
         json_path="workout_session.calories.parsed",
@@ -307,6 +326,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:fire",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorDef(
         json_path="workout_session.cadence.parsed",
@@ -315,6 +335,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         unit="rpm",
         icon="mdi:run",
         formatter="format_session_metric",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.avg_cadence.parsed",
@@ -323,6 +344,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         unit="rpm",
         icon="mdi:run",
         formatter="format_session_metric",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.altitude.parsed",
@@ -332,6 +354,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:image-filter-hdr",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.total_up_altitude.parsed",
@@ -341,6 +364,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:arrow-up-bold",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorDef(
         json_path="workout_session.total_count.parsed",
@@ -349,6 +373,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         unit="times",
         icon="mdi:counter",
         formatter="format_session_metric",
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorDef(
         json_path="workout_session.vertical_speed.parsed",
@@ -358,6 +383,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:arrow-up-bold-circle-outline",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorDef(
         json_path="workout_session.downhill_count.parsed",
@@ -366,6 +392,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         unit="times",
         icon="mdi:arrow-down-bold",
         formatter="format_session_metric",
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorDef(
         json_path="workout_session.total_downhill_distance.parsed",
@@ -375,6 +402,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:arrow-down-bold-circle-outline",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorDef(
         json_path="workout_session.stride.parsed",
@@ -384,6 +412,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:shoe-print",
         formatter="format_session_metric",
         device_class=SensorDeviceClass.DISTANCE,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 ]
 
@@ -415,6 +444,7 @@ SENSORS_WITH_TARGET: Final[list[SensorWithTargetDef]] = [
         name="Steps",
         unit="steps",
         icon="mdi:walk",
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorWithTargetDef(
         current_path="calorie.current",
@@ -424,6 +454,7 @@ SENSORS_WITH_TARGET: Final[list[SensorWithTargetDef]] = [
         unit="kcal",
         icon="mdi:fire",
         device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorWithTargetDef(
         current_path="fat_burning.current",
@@ -433,6 +464,7 @@ SENSORS_WITH_TARGET: Final[list[SensorWithTargetDef]] = [
         unit=UnitOfTime.MINUTES,
         icon="mdi:run-fast",
         device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     SensorWithTargetDef(
         current_path="stands.current",
@@ -441,5 +473,6 @@ SENSORS_WITH_TARGET: Final[list[SensorWithTargetDef]] = [
         name="Stands",
         unit="times",
         icon="mdi:human-handsup",
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
 ]
