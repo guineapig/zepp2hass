@@ -146,6 +146,7 @@ To send data from your Zepp smartwatch to Home Assistant, you need to install th
 
 - Amazfit Active
 - Amazfit Active Edge
+- Amazfit Active Max
 - Amazfit Active 2 (Round)
 - Amazfit Active 2 NFC (Round)
 - Amazfit Active 2 (Square)
