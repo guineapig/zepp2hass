@@ -26,6 +26,7 @@ class PAISensor(ZeppSensorBase):
 
     _WEEK_PATH = "pai.week"
     _DAY_PATH = "pai.day"
+    _LAST_WEEK_PATH = "pai.last_week"
 
     def __init__(self, coordinator: ZeppDataUpdateCoordinator) -> None:
         """Initialize the PAI sensor."""
@@ -54,8 +55,14 @@ class PAISensor(ZeppSensorBase):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return extra state attributes (daily PAI)."""
+        """Return extra state attributes (daily PAI and last week)."""
+        attributes = {}
         pai_day, found = self._get_value(self._DAY_PATH)
         if found and pai_day is not None:
-            return {"today": pai_day}
-        return {}
+            attributes["today"] = pai_day
+            
+        pai_last_week, found = self._get_value(self._LAST_WEEK_PATH)
+        if found and pai_last_week is not None:
+            attributes["last_week"] = pai_last_week
+            
+        return attributes

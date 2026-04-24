@@ -155,6 +155,26 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Invalidate cached computed data
         self._sorted_workout_history = None
 
+        # Infer battery charging state
+        battery_data = data.get("battery", {})
+        new_battery = battery_data.get("current")
+        
+        # If the payload explicitly contains charging state, use it
+        if "is_charging" in battery_data:
+            self._is_charging = bool(battery_data["is_charging"])
+        elif new_battery is not None:
+            # Otherwise, infer it from battery level changes
+            last_battery = getattr(self, "_last_battery_level", None)
+            if last_battery is not None:
+                if new_battery > last_battery:
+                    self._is_charging = True
+                elif new_battery < last_battery:
+                    self._is_charging = False
+            self._last_battery_level = new_battery
+            
+            # Inject the inferred state into the data payload
+            battery_data["is_charging"] = getattr(self, "_is_charging", False)
+
         # Delegate to parent to store data and notify listeners
         super().async_set_updated_data(data)
 

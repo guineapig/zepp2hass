@@ -8,7 +8,7 @@ Provides binary sensors for device state:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING
 
 from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from .coordinator import ZeppDataUpdateCoordinator
 
 # Type alias for state check functions
-StateCheckFn = Callable[[int | None], bool]
+StateCheckFn = Callable[[Any], bool]
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +79,11 @@ def _is_sleeping(value: int | None) -> bool:
     return value == 1
 
 
+def _is_charging(value: Any | None) -> bool:
+    """Check if device is charging."""
+    return bool(value)
+
+
 # --- Sensor Definitions ---
 
 
@@ -109,6 +114,15 @@ BINARY_SENSOR_DEFINITIONS: tuple[BinarySensorDef, ...] = (
         icon_on="mdi:sleep",
         icon_off="mdi:sleep-off",
         device_class=None,
+    ),
+    BinarySensorDef(
+        key="is_charging_binary",
+        name="Is Charging",
+        data_path="battery.is_charging",
+        is_on_check=_is_charging,
+        icon_on="mdi:battery-charging",
+        icon_off="mdi:battery",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
     ),
 )
 

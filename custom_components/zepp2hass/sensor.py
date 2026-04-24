@@ -25,6 +25,8 @@ from .sensors import (
     BloodOxygenSensor,
     PAISensor,
     WebhookUrlSensor,
+    SleepScoreSensor,
+    RawDataSensor,
     SENSOR_DEFINITIONS,
     SENSORS_WITH_TARGET,
     _WORKOUT_SESSION_SENSORS,
@@ -76,6 +78,8 @@ async def async_setup_entry(
         
         BloodOxygenSensor(coordinator),
         PAISensor(coordinator),
+        SleepScoreSensor(coordinator),
+        RawDataSensor(coordinator),
         # Diagnostic sensor for webhook URL
         # WebhookUrlSensor(hass, entry.entry_id, device_name, webhook_url),
     ]

@@ -145,6 +145,7 @@ class Zepp2HassSensor(ZeppSensorBase):
         self._attr_entity_category = sensor_def.category
         self._attr_device_class = sensor_def.device_class
         self._attr_state_class = sensor_def.state_class
+        self._attributes_map = getattr(sensor_def, "attributes_map", None)
 
     @property
     def available(self) -> bool:
@@ -174,6 +175,19 @@ class Zepp2HassSensor(ZeppSensorBase):
                          pass
             return None
         return format_sensor_value(raw_val, self._formatter)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extra state attributes."""
+        if not self._attributes_map or not self._data:
+            return {}
+        
+        attributes = {}
+        for attr_key, attr_path in self._attributes_map.items():
+            val, found = get_nested_value(self._data, attr_path)
+            if found:
+                attributes[attr_key] = val
+        return attributes
 
 
 class Zepp2HassSensorWithTarget(ZeppSensorBase):

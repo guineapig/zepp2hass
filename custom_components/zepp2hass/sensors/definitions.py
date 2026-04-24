@@ -44,6 +44,7 @@ class SensorDef(NamedTuple):
     category: EntityCategory | None = None
     device_class: SensorDeviceClass | None = None
     state_class: SensorStateClass | None = None
+    attributes_map: dict[str, str] | None = None
 
 
 class SensorWithTargetDef(NamedTuple):
@@ -113,6 +114,21 @@ _DIAGNOSTIC_SENSORS: Final[list[SensorDef]] = [
         category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
     ),
+    SensorDef(
+        json_path="trigger.event",
+        key="trigger_event",
+        name="Trigger Event",
+        icon="mdi:lightning-bolt",
+        category=EntityCategory.DIAGNOSTIC,
+        attributes_map={"status": "trigger.status"},
+    ),
+    SensorDef(
+        json_path="last_error",
+        key="last_error",
+        name="Last Error",
+        icon="mdi:alert-circle",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
 ]
 
 # --- Battery Sensor ---
@@ -151,6 +167,7 @@ _HEALTH_SENSORS: Final[list[SensorDef]] = [
         unit="points",
         icon="mdi:emoticon-sad-outline",
         state_class=SensorStateClass.MEASUREMENT,
+        attributes_map={"last_week": "stress.last_week"},
     ),
 ]
 
@@ -203,14 +220,6 @@ _HEART_RATE_SENSORS: Final[list[SensorDef]] = [
 # Sleep tracking data
 
 _SLEEP_SENSORS: Final[list[SensorDef]] = [
-    SensorDef(
-        json_path="sleep.info.score",
-        key="sleep_score",
-        name="Sleep Score",
-        unit="points",
-        icon="mdi:sleep",
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
     SensorDef(
         json_path="sleep.info.startTime",
         key="sleep_start",
