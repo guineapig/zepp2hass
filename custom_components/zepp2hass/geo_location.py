@@ -139,18 +139,6 @@ class ZeppGeolocationEvent(
             data[ATTR_LONGITUDE] = round(self.longitude, 5)
 
         optional_attributes = {
-            "record_time": self._first_value(
-                (
-                    "location.record_time",
-                    "geolocation.record_time",
-                    "geo_location.record_time",
-                    "record_time",
-                )
-            ),
-            "kind": self._first_value(("kind",)),
-            "source_app": self._first_value(("source_app", "source.app")),
-            "profile_id": self._first_value(("profile.id",)),
-            "profile_label": self._first_value(("profile.label",)),
             "status": self._status,
             "altitude": self._first_value(
                 (

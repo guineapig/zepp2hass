@@ -239,7 +239,7 @@ curl -X POST http://YOUR_HA_IP:8123/api/webhook/YOUR_WEBHOOK_ID \
     "battery": {"current": 80},
     "steps": {"current": 5000, "target": 10000},
     "heart_rate": {"last": 72, "resting": 58},
-    "location": {"record_time": "2026-06-15T10:00:00Z", "status": "A", "latitude": 45.4642, "longitude": 9.1900},
+    "geolocation": {"status": "A", "latitude": 45.4642, "longitude": 9.1900},
     "compass": {"status": true, "direction": "NE", "direction_angle": 45},
     "is_wearing": 1
   }'
