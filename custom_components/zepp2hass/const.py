@@ -17,6 +17,11 @@ DEFAULT_DEVICE_NAME: Final[str] = "zepp_device"
 # Configuration keys
 CONF_BASE_URL: Final[str] = "base_url"
 
+# Webhook safety limits
+RATE_LIMIT_REQUESTS: Final[int] = 30
+RATE_LIMIT_WINDOW_SECONDS: Final[int] = 60
+RECENT_PAYLOAD_ID_LIMIT: Final[int] = 200
+
 # Data section keys (JSON payload structure)
 class DataSection:
     """Keys for top-level sections in the webhook payload."""

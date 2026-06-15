@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import time
 from pathlib import Path
 
 from typing import Any
@@ -33,6 +34,9 @@ from .const import (
     DEFAULT_MANUFACTURER,
     DEFAULT_MODEL,
     CONF_BASE_URL,
+    RATE_LIMIT_REQUESTS,
+    RATE_LIMIT_WINDOW_SECONDS,
+    RECENT_PAYLOAD_ID_LIMIT,
 )
 from .coordinator import ZeppDataUpdateCoordinator
 
@@ -40,6 +44,50 @@ _LOGGER = logging.getLogger(__name__)
 
 # Cache for dashboard HTML template
 _DASHBOARD_TEMPLATE: str | None = None
+
+_OBJECT_SECTIONS: frozenset[str] = frozenset(
+    {
+        "battery",
+        "blood_oxygen",
+        "body_temperature",
+        "calorie",
+        "capabilities",
+        "compass",
+        "device",
+        "distance",
+        "fat_burning",
+        "geolocation",
+        "geo_location",
+        "heart_rate",
+        "location",
+        "pai",
+        "screen",
+        "sleep",
+        "stands",
+        "steps",
+        "stress",
+        "trigger",
+        "user",
+        "workout",
+        "workout_session",
+    }
+)
+
+_SCALAR_FIELDS: frozenset[str] = frozenset(
+    {
+        "id",
+        "schema_version",
+        "record_time",
+        "last_update",
+        "kind",
+        "source_app",
+        "created_at",
+        "attempt_count",
+        "is_wearing",
+    }
+)
+
+_KNOWN_PROFILE_IDS: frozenset[str] = frozenset({"sarah", "flo", "zora"})
 
 
 async def _load_dashboard_template() -> str:
@@ -58,6 +106,147 @@ async def _load_dashboard_template() -> str:
             _LOGGER.error("Dashboard template not found at %s", dashboard_path)
             _DASHBOARD_TEMPLATE = "<html><body><h1>Webhook URL</h1><p>{{WEBHOOK_URL}}</p></body></html>"
     return _DASHBOARD_TEMPLATE
+
+
+def _is_rate_limited(entry_data: dict[str, Any]) -> bool:
+    """Return True when the entry exceeded its POST rate window."""
+    now = time.monotonic()
+    timestamps: list[float] = entry_data.setdefault("request_timestamps", [])
+    window_start = now - RATE_LIMIT_WINDOW_SECONDS
+    timestamps[:] = [stamp for stamp in timestamps if stamp >= window_start]
+
+    if len(timestamps) >= RATE_LIMIT_REQUESTS:
+        return True
+
+    timestamps.append(now)
+    return False
+
+
+def _get_payload_id(payload: dict[str, Any]) -> str | None:
+    """Return the optional idempotency key from a payload."""
+    payload_id = payload.get("id")
+    if payload_id is None:
+        return None
+    return str(payload_id).strip() or None
+
+
+def _is_duplicate_payload(entry_data: dict[str, Any], payload_id: str | None) -> bool:
+    """Track recent payload IDs and return True for duplicate submissions."""
+    if not payload_id:
+        return False
+
+    seen_ids: list[str] = entry_data.setdefault("recent_payload_ids", [])
+    if payload_id in seen_ids:
+        entry_data["duplicate_payload_count"] = (
+            int(entry_data.get("duplicate_payload_count", 0)) + 1
+        )
+        return True
+
+    seen_ids.append(payload_id)
+    if len(seen_ids) > RECENT_PAYLOAD_ID_LIMIT:
+        del seen_ids[: len(seen_ids) - RECENT_PAYLOAD_ID_LIMIT]
+    return False
+
+
+def _validate_payload(payload: dict[str, Any]) -> str | None:
+    """Validate known Zepp2Hass payload fields without blocking future fields."""
+    if not payload:
+        return "Payload must not be empty"
+
+    for key in _OBJECT_SECTIONS:
+        value = payload.get(key)
+        if value is not None and not isinstance(value, dict):
+            return f"Field '{key}' must be a JSON object"
+
+    for key in _SCALAR_FIELDS:
+        value = payload.get(key)
+        if isinstance(value, (dict, list)):
+            return f"Field '{key}' must be a scalar value"
+
+    source = payload.get("source")
+    if isinstance(source, list):
+        return "Field 'source' must be a string or JSON object"
+
+    profile = payload.get("profile")
+    if profile is not None:
+        message = _validate_profile(profile)
+        if message:
+            return message
+
+    capabilities = payload.get("capabilities")
+    if isinstance(capabilities, dict):
+        for key in ("unsupported", "unavailable", "skipped"):
+            value = capabilities.get(key)
+            if value is not None and not isinstance(value, list):
+                return f"Field 'capabilities.{key}' must be a list"
+
+    for location_key in ("location", "geolocation", "geo_location"):
+        location = payload.get(location_key)
+        if isinstance(location, dict):
+            message = _validate_location(location_key, location)
+            if message:
+                return message
+
+    return None
+
+
+def _validate_profile(profile: Any) -> str | None:
+    """Validate supported profile identity shapes."""
+    if isinstance(profile, str):
+        return None
+    if not isinstance(profile, dict):
+        return "Field 'profile' must be a string or JSON object"
+
+    for key in ("id", "label", "mode"):
+        value = profile.get(key)
+        if value is not None and not isinstance(value, str):
+            return f"Field 'profile.{key}' must be a string"
+
+    profile_id = profile.get("id")
+    if isinstance(profile_id, str) and profile_id and profile_id not in _KNOWN_PROFILE_IDS:
+        _LOGGER.debug("Received payload for unconfigured profile id %s", profile_id)
+
+    return None
+
+
+def _validate_location(location_key: str, location: dict[str, Any]) -> str | None:
+    """Validate app-open location shape without logging precise coordinates."""
+    latitude = location.get("latitude", location.get("lat"))
+    longitude = location.get("longitude", location.get("lon", location.get("lng")))
+
+    if latitude is None and longitude is None:
+        return None
+    if latitude is None or longitude is None:
+        return f"Field '{location_key}' must include both latitude and longitude"
+
+    if _coordinate_or_dms_to_float(latitude) is None:
+        return f"Field '{location_key}.latitude' must be a valid coordinate"
+    if _coordinate_or_dms_to_float(longitude) is None:
+        return f"Field '{location_key}.longitude' must be a valid coordinate"
+
+    return None
+
+
+def _coordinate_or_dms_to_float(value: Any) -> float | None:
+    """Return a decimal coordinate from a scalar or Zepp DMS object."""
+    if isinstance(value, dict):
+        degrees = value.get("degrees")
+        if degrees is None:
+            return None
+        try:
+            minutes = float(value.get("minutes", 0))
+            seconds = float(value.get("seconds", 0))
+            coordinate = float(degrees) + (minutes / 60) + (seconds / 3600)
+        except (TypeError, ValueError):
+            return None
+
+        direction = str(value.get("direction", "")).upper()
+        return -coordinate if direction in {"S", "W"} else coordinate
+
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 
@@ -241,6 +430,18 @@ def _create_webhook_handler(hass: HomeAssistant, entry_id: str):
 
         # Handle POST requests - process webhook payload
 
+        if _is_rate_limited(entry_data):
+            _LOGGER.warning("Rate limit exceeded for Zepp2Hass entry %s", entry_id)
+            return web.json_response(
+                {
+                    "error": "rate_limited",
+                    "message": (
+                        f"Maximum {RATE_LIMIT_REQUESTS} requests per "
+                        f"{RATE_LIMIT_WINDOW_SECONDS} seconds exceeded"
+                    ),
+                },
+                status=429,
+            )
 
         # Parse JSON payload
         try:
@@ -258,6 +459,23 @@ def _create_webhook_handler(hass: HomeAssistant, entry_id: str):
                 {"error": "Invalid payload", "message": "Payload must be a JSON object"},
                 status=400,
             )
+
+        validation_error = _validate_payload(payload)
+        if validation_error:
+            _LOGGER.warning(
+                "Rejected invalid Zepp2Hass webhook payload for %s: %s",
+                entry_id,
+                validation_error,
+            )
+            return web.json_response(
+                {"error": "Invalid payload", "message": validation_error},
+                status=400,
+            )
+
+        payload_id = _get_payload_id(payload)
+        if _is_duplicate_payload(entry_data, payload_id):
+            _LOGGER.debug("Ignored duplicate Zepp2Hass payload for %s", entry_id)
+            return web.json_response({"status": "ok"})
 
         # Process payload
         coordinator: ZeppDataUpdateCoordinator = entry_data["coordinator"]

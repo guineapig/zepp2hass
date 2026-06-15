@@ -26,7 +26,7 @@
 
 Zepp2Hass receives data from your Zepp smartwatch via a local webhook endpoint. When you configure the integration, it creates a unique webhook URL that accepts JSON payloads with all your health metrics.
 
-**Rate limiting** is built-in to protect your Home Assistant instance: max 30 requests per 60 seconds per device.
+**Rate limiting** is built-in to protect your Home Assistant instance: max 30 POST requests per 60 seconds per device.
 
 ### 🌐 Web Interface
 
@@ -53,6 +53,31 @@ The integration creates multiple sensor types organized by category:
 | **Device**         | Battery, Screen Status/AOD/Brightness, Device Info, User Info           |
 | **PAI**            | Weekly PAI score with daily PAI as attribute                            |
 | **Binary Sensors** | Is Wearing, Is Moving, Is Sleeping                                      |
+
+### Movement Leaderboard Entity Mapping
+
+Zepp2Hass creates stable entity unique IDs from the Home Assistant config entry plus the sensor key. Home Assistant entity IDs are generated from the configured device name and sensor name, so a config entry named `Zepp Sarah` normally produces entity IDs such as `sensor.zepp_sarah_steps`.
+
+For Sarah, Flo, and Zora, create one Zepp2Hass config entry/webhook per watch and use clear device names such as `Zepp Sarah`, `Zepp Flo`, and `Zepp Zora`. If Home Assistant adds suffixes such as `_2`, keep the unique IDs stable and update the movement leaderboard mapping to the actual entity IDs shown in Settings > Devices & Services > Entities.
+
+| Leaderboard key | Zepp2Hass sensor name | Example entity for `Zepp Sarah` |
+| --- | --- | --- |
+| `steps_today` | Steps | `sensor.zepp_sarah_steps` |
+| `fat_burning_today` | Fat Burning | `sensor.zepp_sarah_fat_burning` |
+| `distance_today` | Distance | `sensor.zepp_sarah_distance` |
+| `calories_today` | Calories | `sensor.zepp_sarah_calories` |
+| `standing_today` | Stands | `sensor.zepp_sarah_stands` |
+| `pai_today` | PAI | `sensor.zepp_sarah_pai` |
+| `workout_minutes_today` | Workout Minutes Today | `sensor.zepp_sarah_workout_minutes_today` |
+| `heart_rate_last` | Heart Rate | `sensor.zepp_sarah_heart_rate` |
+| `stress_last` | Stress | `sensor.zepp_sarah_stress` |
+| `wearing_status` | Is Wearing | `binary_sensor.zepp_sarah_is_wearing` |
+| `battery` | Battery | `sensor.zepp_sarah_battery` |
+| `last_update` | Last Update | `sensor.zepp_sarah_last_update` |
+
+Profile/source diagnostics are exposed as `Profile ID`, `Profile Label`, `Profile Mode`, `Source App`, `Source Device ID`, and `Source Device Name` sensors. The movement leaderboard should treat these as identity/status data, not ranking metrics.
+
+App-open location payloads from `tt_zepp_app` are exposed as a measured watch `geo_location` entity, for example `geo_location.zepp_sarah_location`. Location data is not written to Tagestracker helpers by Zepp2Hass.
 
 ---
 
@@ -206,6 +231,11 @@ automation:
 curl -X POST http://YOUR_HA_IP:8123/api/webhook/YOUR_WEBHOOK_ID \
   -H "Content-Type: application/json" \
   -d '{
+    "id": "sensor-sarah-2026-06-15T10:00:00Z",
+    "schema_version": 1,
+    "record_time": "2026-06-15T10:00:00Z",
+    "source_app": "tt_zepp_app",
+    "profile": {"id": "sarah", "label": "Sarah", "mode": "full_tracker"},
     "battery": {"current": 80},
     "steps": {"current": 5000, "target": 10000},
     "heart_rate": {"last": 72, "resting": 58},
@@ -222,6 +252,16 @@ Expected response:
 ```json
 { "status": "ok" }
 ```
+
+### Webhook response and payload rules
+
+- Successful POST requests always return `{ "status": "ok" }`.
+- Duplicate POST requests with an already-seen payload `id` are ignored and still return `{ "status": "ok" }`.
+- Invalid JSON, non-object payloads, malformed known sections, or invalid coordinates return HTTP 400 with an error class and short message.
+- More than 30 POST requests per 60 seconds for one Zepp2Hass entry return HTTP 429 `rate_limited`.
+- Unsupported sensor categories should be omitted from the payload or listed under `capabilities.unsupported`.
+- Temporarily unavailable categories should be omitted or listed under `capabilities.unavailable`.
+- Missing or unavailable metrics become unavailable/missing entities in Home Assistant; they must not be sent as misleading zero values.
 
 ### 🐞 Debug Mode & Advanced Troubleshooting
 

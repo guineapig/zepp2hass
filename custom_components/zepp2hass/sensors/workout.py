@@ -7,9 +7,12 @@ Provides sensors for workout tracking:
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any, TYPE_CHECKING
 
 from homeassistant.components.sensor import SensorStateClass
+from homeassistant.const import UnitOfTime
+from homeassistant.util import dt as dt_util
 
 from .base import ZeppSensorBase
 from .formatters import (
@@ -215,3 +218,54 @@ class WorkoutHistorySensor(ZeppSensorBase):
         duration_min = format_duration_minutes(workout.get("duration")) or 0
 
         return f"{start_time} - {sport_name} ({duration_min} min)"
+
+
+class WorkoutMinutesTodaySensor(ZeppSensorBase):
+    """Total workout duration for workouts started today."""
+
+    def __init__(
+        self,
+        coordinator: ZeppDataUpdateCoordinator,
+        device_info: Any = None,
+    ) -> None:
+        """Initialize the workout minutes sensor."""
+        super().__init__(
+            coordinator=coordinator,
+            key="workout_minutes_today",
+            name="Workout Minutes Today",
+            icon="mdi:timer-outline",
+            unit=UnitOfTime.MINUTES,
+            device_info=device_info,
+        )
+        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
+
+    @property
+    def available(self) -> bool:
+        """Return True if workout history is available."""
+        return self._is_coordinator_ready() and bool(self.coordinator.sorted_workout_history)
+
+    @property
+    def native_value(self) -> int | None:
+        """Return total workout minutes for workouts started today."""
+        total_minutes = 0
+        today = dt_util.now().date()
+
+        for workout in self.coordinator.sorted_workout_history:
+            start_time = _workout_start_datetime(workout.get("startTime"))
+            if start_time is None or start_time.date() != today:
+                continue
+            total_minutes += format_duration_minutes(workout.get("duration")) or 0
+
+        return total_minutes
+
+
+def _workout_start_datetime(value: Any) -> datetime | None:
+    """Return a local datetime from a Zepp workout timestamp."""
+    if not isinstance(value, (int, float)):
+        return None
+
+    timestamp = value / 1000 if value > 1e12 else value
+    try:
+        return dt_util.as_local(datetime.fromtimestamp(timestamp, tz=timezone.utc))
+    except (OSError, OverflowError, ValueError):
+        return None

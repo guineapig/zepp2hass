@@ -65,6 +65,9 @@ async def async_get_config_entry_diagnostics(
         "webhook": {
             "url": entry_data.get("webhook_url", "N/A"),
             "full_url": entry_data.get("webhook_full_url", "N/A"),
+            "recent_payload_ids_count": len(entry_data.get("recent_payload_ids", [])),
+            "duplicate_payload_count": entry_data.get("duplicate_payload_count", 0),
+            "rate_window_request_count": len(entry_data.get("request_timestamps", [])),
         },
         "coordinator": {
             "has_data": coordinator.data is not None if coordinator else False,
@@ -72,4 +75,3 @@ async def async_get_config_entry_diagnostics(
             "data": coordinator_data,
         },
     }
-

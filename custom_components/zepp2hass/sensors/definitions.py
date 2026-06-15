@@ -92,6 +92,42 @@ _DIAGNOSTIC_SENSORS: Final[list[SensorDef]] = [
         category=EntityCategory.DIAGNOSTIC,
     ),
     SensorDef(
+        json_path="last_update",
+        key="last_update",
+        name="Last Update",
+        icon="mdi:update",
+        category=EntityCategory.DIAGNOSTIC,
+        attributes_map={"record_time": "record_time"},
+    ),
+    SensorDef(
+        json_path="id",
+        key="payload_id",
+        name="Payload ID",
+        icon="mdi:identifier",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="schema_version",
+        key="payload_schema_version",
+        name="Payload Schema Version",
+        icon="mdi:counter",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="kind",
+        key="payload_kind",
+        name="Payload Kind",
+        icon="mdi:shape-outline",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="source_app",
+        key="source_app",
+        name="Source App",
+        icon="mdi:application",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
         json_path="screen.status",
         key="screen_status",
         name="Screen Status",
@@ -128,6 +164,58 @@ _DIAGNOSTIC_SENSORS: Final[list[SensorDef]] = [
         key="last_error",
         name="Last Error",
         icon="mdi:alert-circle",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+]
+
+# --- Profile and source identity sensors ---
+# The generated entity IDs are stable per Zepp2Hass config entry. These values
+# make the current app/profile identity visible for leaderboard mapping.
+
+_PROFILE_SENSORS: Final[list[SensorDef]] = [
+    SensorDef(
+        json_path="profile.id",
+        key="profile_id",
+        name="Profile ID",
+        icon="mdi:account",
+        category=EntityCategory.DIAGNOSTIC,
+        attributes_map={"label": "profile.label", "mode": "profile.mode"},
+    ),
+    SensorDef(
+        json_path="profile.label",
+        key="profile_label",
+        name="Profile Label",
+        icon="mdi:account-badge",
+        category=EntityCategory.DIAGNOSTIC,
+        attributes_map={"id": "profile.id", "mode": "profile.mode"},
+    ),
+    SensorDef(
+        json_path="profile.mode",
+        key="profile_mode",
+        name="Profile Mode",
+        icon="mdi:account-cog",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="profile.movement_upload_enabled",
+        key="profile_movement_upload",
+        name="Profile Movement Upload",
+        icon="mdi:upload",
+        formatter="format_bool",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="device.uuid",
+        key="source_device_id",
+        name="Source Device ID",
+        icon="mdi:watch-variant",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="device.deviceName",
+        key="source_device_name",
+        name="Source Device Name",
+        icon="mdi:watch",
         category=EntityCategory.DIAGNOSTIC,
     ),
 ]
@@ -467,6 +555,7 @@ _WORKOUT_SESSION_SENSORS: Final[list[SensorDef]] = [
 # All standard sensor definitions
 SENSOR_DEFINITIONS: Final[list[SensorDef]] = [
     *_DIAGNOSTIC_SENSORS,
+    *_PROFILE_SENSORS,
     *_BATTERY_SENSORS,
     *_HEALTH_SENSORS,
     *_ACTIVITY_SENSORS,
