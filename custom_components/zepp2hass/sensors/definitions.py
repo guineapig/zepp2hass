@@ -14,6 +14,7 @@ from typing import NamedTuple, Final
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import (
+    DEGREE,
     PERCENTAGE,
     UnitOfTemperature,
     UnitOfLength,
@@ -183,6 +184,40 @@ _ACTIVITY_SENSORS: Final[list[SensorDef]] = [
         icon="mdi:map-marker-distance",
         device_class=SensorDeviceClass.DISTANCE,
         state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+]
+
+# --- Compass Sensors ---
+# Direction data from the watch compass sensor
+
+_COMPASS_SENSORS: Final[list[SensorDef]] = [
+    SensorDef(
+        json_path="compass.direction",
+        key="compass_direction",
+        name="Compass Direction",
+        icon="mdi:compass-outline",
+        attributes_map={"calibrated": "compass.status"},
+    ),
+    SensorDef(
+        json_path="compass.direction_angle",
+        key="compass_direction_angle",
+        name="Compass Direction Angle",
+        unit=DEGREE,
+        icon="mdi:compass",
+        formatter="format_compass_angle",
+        state_class=SensorStateClass.MEASUREMENT,
+        attributes_map={
+            "direction": "compass.direction",
+            "calibrated": "compass.status",
+        },
+    ),
+    SensorDef(
+        json_path="compass.status",
+        key="compass_status",
+        name="Compass Calibrated",
+        icon="mdi:compass-rose",
+        formatter="format_bool",
+        category=EntityCategory.DIAGNOSTIC,
     ),
 ]
 
@@ -435,6 +470,7 @@ SENSOR_DEFINITIONS: Final[list[SensorDef]] = [
     *_BATTERY_SENSORS,
     *_HEALTH_SENSORS,
     *_ACTIVITY_SENSORS,
+    *_COMPASS_SENSORS,
     *_HEART_RATE_SENSORS,
     *_SLEEP_SENSORS,
     *_WORKOUT_SESSION_SENSORS,

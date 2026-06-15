@@ -155,6 +155,17 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Invalidate cached computed data
         self._sorted_workout_history = None
 
+        # Normalize compass aliases from likely Zepp app payloads.
+        compass_data = data.get("compass", {})
+        if isinstance(compass_data, dict):
+            if "direction_angle" not in compass_data:
+                for key in ("directionAngle", "angle"):
+                    if key in compass_data:
+                        compass_data["direction_angle"] = compass_data[key]
+                        break
+            if "status" not in compass_data and "calibrated" in compass_data:
+                compass_data["status"] = compass_data["calibrated"]
+
         # Infer battery charging state
         battery_data = data.get("battery", {})
         new_battery = battery_data.get("current")

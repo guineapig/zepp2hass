@@ -7,7 +7,7 @@ DOMAIN: Final[str] = "zepp2hass"
 
 
 # Sensor platforms supported by this integration
-PLATFORMS: Final[tuple[str, ...]] = ("sensor", "binary_sensor")
+PLATFORMS: Final[tuple[str, ...]] = ("sensor", "binary_sensor", "geo_location")
 
 # Device information defaults
 DEFAULT_MANUFACTURER: Final[str] = "Zepp"
@@ -31,3 +31,5 @@ class DataSection:
     BATTERY: Final[str] = "battery"
     STEPS: Final[str] = "steps"
     CALORIE: Final[str] = "calorie"
+    GEOLOCATION: Final[str] = "geolocation"
+    COMPASS: Final[str] = "compass"

@@ -343,6 +343,18 @@ def format_session_metric(value: Any) -> Any:
     return target_value
 
 
+def format_compass_angle(value: Any) -> float | int | None | Any:
+    """Format compass angle, treating Zepp's invalid sentinel as unavailable."""
+    if isinstance(value, str) and value.upper() == "INVALID":
+        return None
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return value
+    return value
+
+
 # --- Formatter registry ---
 
 # Formatter function mapping for dynamic lookup by name
@@ -356,6 +368,7 @@ FORMATTER_MAP: dict[str, Formatter] = {
     "format_sleep_time": format_sleep_time,
     "format_workout_state": format_workout_state,
     "format_session_metric": format_session_metric,
+    "format_compass_angle": format_compass_angle,
 }
 
 # Formatters that handle their own rounding (don't apply default float rounding)
