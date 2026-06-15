@@ -7,7 +7,7 @@ DOMAIN: Final[str] = "zepp2hass"
 
 
 # Sensor platforms supported by this integration
-PLATFORMS: Final[tuple[str, ...]] = ("sensor", "binary_sensor")
+PLATFORMS: Final[tuple[str, ...]] = ("sensor", "binary_sensor", "geo_location")
 
 # Device information defaults
 DEFAULT_MANUFACTURER: Final[str] = "Zepp"
@@ -16,6 +16,11 @@ DEFAULT_DEVICE_NAME: Final[str] = "zepp_device"
 
 # Configuration keys
 CONF_BASE_URL: Final[str] = "base_url"
+
+# Webhook safety limits
+RATE_LIMIT_REQUESTS: Final[int] = 30
+RATE_LIMIT_WINDOW_SECONDS: Final[int] = 60
+RECENT_PAYLOAD_ID_LIMIT: Final[int] = 200
 
 # Data section keys (JSON payload structure)
 class DataSection:
@@ -31,3 +36,5 @@ class DataSection:
     BATTERY: Final[str] = "battery"
     STEPS: Final[str] = "steps"
     CALORIE: Final[str] = "calorie"
+    GEOLOCATION: Final[str] = "geolocation"
+    COMPASS: Final[str] = "compass"

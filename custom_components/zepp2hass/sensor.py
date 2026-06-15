@@ -22,6 +22,7 @@ from .sensors import (
     WorkoutHistorySensor,
     WorkoutStatusSensor,
     WorkoutLastSensor,
+    WorkoutMinutesTodaySensor,
     BloodOxygenSensor,
     PAISensor,
     WebhookUrlSensor,
@@ -74,6 +75,7 @@ async def async_setup_entry(
         # Workout special sensors (on new device)
         WorkoutLastSensor(coordinator, device_info=coordinator.workout_device_info),
         WorkoutHistorySensor(coordinator, device_info=coordinator.workout_device_info),
+        WorkoutMinutesTodaySensor(coordinator, device_info=coordinator.workout_device_info),
         WorkoutStatusSensor(coordinator, device_info=coordinator.workout_device_info),
         
         BloodOxygenSensor(coordinator),

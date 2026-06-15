@@ -36,6 +36,7 @@ from .raw import RawDataSensor
 from .workout import (
     WorkoutHistorySensor,
     WorkoutLastSensor,
+    WorkoutMinutesTodaySensor,
     WorkoutStatusSensor,
 )
 
@@ -74,6 +75,7 @@ __all__ = [
     "RawDataSensor",
     "WorkoutHistorySensor",
     "WorkoutLastSensor",
+    "WorkoutMinutesTodaySensor",
     "WorkoutStatusSensor",
     # Formatters
     "FORMATTER_MAP",
