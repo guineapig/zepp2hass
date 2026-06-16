@@ -49,13 +49,26 @@ class BloodOxygenSensor(ZeppSensorBase):
             return few_hours
         return []
 
+    def _get_current_spo2(self) -> int | float | None:
+        """Return the current SpO2 value when history is not available."""
+        section = self._get_section(self._SECTION)
+        current = section.get("current")
+        if isinstance(current, dict):
+            value = current.get("spo2", current.get("value"))
+        else:
+            value = current
+
+        return value if isinstance(value, (int, float)) else None
+
     @property
     def available(self) -> bool:
         """Return True if entity is available (has valid readings)."""
-        return self._is_coordinator_ready() and bool(self._get_readings())
+        return self._is_coordinator_ready() and (
+            bool(self._get_readings()) or self._get_current_spo2() is not None
+        )
 
     @property
-    def native_value(self) -> int | None:
+    def native_value(self) -> int | float | None:
         """Return the SpO2 value from the most recent reading."""
         readings = self._get_readings()
-        return readings[-1].get("spo2") if readings else None
+        return readings[-1].get("spo2") if readings else self._get_current_spo2()
