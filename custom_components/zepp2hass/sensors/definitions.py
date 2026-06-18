@@ -234,6 +234,20 @@ _PROFILE_SENSORS: Final[list[SensorDef]] = [
         category=EntityCategory.DIAGNOSTIC,
     ),
     SensorDef(
+        json_path="device.watch_api_device_id",
+        key="watch_api_device_id",
+        name="Tagestracker Watch Device ID",
+        icon="mdi:identifier",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="device.source_app_device_id",
+        key="source_app_device_id",
+        name="Watch Source App Device ID",
+        icon="mdi:watch-import-variant",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
         json_path="device.deviceName",
         key="source_device_name",
         name="Source Device Name",

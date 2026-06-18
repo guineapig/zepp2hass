@@ -12,7 +12,11 @@ the subjective Tagestracker write-intent endpoint.
   "record_time": "2026-06-17T20:00:00Z",
   "request_correlation_id": "req-finder-123",
   "profile": {"id": "flo", "label": "Flo", "mode": "full_checkin"},
-  "device": {"uuid": "stable-source-device-id"},
+  "device": {
+    "watch_api_device_id": "tt-watch-0123456789abcdef",
+    "source_app_device_id": "watch-install-...",
+    "uuid": "hardware-uuid-when-available"
+  },
   "location": {
     "latitude": 0,
     "longitude": 0,
@@ -34,5 +38,7 @@ Rules:
   exact distance.
 - Raw coordinates and precise BLE identifiers are redacted from diagnostics.
 - Config-entry identity remains the stable Zepp2Hass device identity; the
-  payload `device.uuid` is exposed only as a diagnostic mapping hint for the
-  Home Assistant stable watch-device assignment.
+  payload `device.watch_api_device_id` links the measured payload to the
+  Home Assistant Tagestracker watch registration. `source_app_device_id`
+  carries the pre-hash watch/app-install identity. Both appear only after the
+  watch has contacted `tt_watch_api`; older queued payloads may omit them.
