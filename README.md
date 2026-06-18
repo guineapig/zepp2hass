@@ -235,7 +235,7 @@ curl -X POST http://YOUR_HA_IP:8123/api/webhook/YOUR_WEBHOOK_ID \
     "schema_version": 1,
     "record_time": "2026-06-15T10:00:00Z",
     "source_app": "tt_zepp_app",
-    "profile": {"id": "sarah", "label": "Sarah", "mode": "full_tracker"},
+    "profile": {"id": "sarah", "label": "Sarah", "mode": "full_checkin"},
     "battery": {"current": 80},
     "steps": {"current": 5000, "target": 10000},
     "heart_rate": {"last": 72, "resting": 58},

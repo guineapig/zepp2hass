@@ -11,7 +11,7 @@ the subjective Tagestracker write-intent endpoint.
   "source_app": "tt_zepp_app",
   "record_time": "2026-06-17T20:00:00Z",
   "request_correlation_id": "req-finder-123",
-  "profile": {"id": "flo", "label": "Flo", "mode": "full_tracker"},
+  "profile": {"id": "flo", "label": "Flo", "mode": "full_checkin"},
   "device": {"uuid": "stable-source-device-id"},
   "location": {
     "latitude": 0,
