@@ -48,6 +48,7 @@ _DASHBOARD_TEMPLATE: str | None = None
 _OBJECT_SECTIONS: frozenset[str] = frozenset(
     {
         "battery",
+        "ble",
         "blood_oxygen",
         "body_temperature",
         "calorie",
@@ -84,6 +85,7 @@ _SCALAR_FIELDS: frozenset[str] = frozenset(
         "created_at",
         "attempt_count",
         "is_wearing",
+        "request_correlation_id",
     }
 )
 
@@ -186,6 +188,24 @@ def _validate_payload(payload: dict[str, Any]) -> str | None:
             message = _validate_location(location_key, location)
             if message:
                 return message
+
+    compass = payload.get("compass")
+    if isinstance(compass, dict):
+        angle = compass.get("direction_angle", compass.get("heading"))
+        if angle is not None:
+            try:
+                if not 0 <= float(angle) < 360:
+                    return "Field 'compass.direction_angle' must be between 0 and 360"
+            except (TypeError, ValueError):
+                return "Field 'compass.direction_angle' must be numeric"
+
+    ble = payload.get("ble")
+    if isinstance(ble, dict):
+        observations = ble.get("observations")
+        if observations is not None and not isinstance(observations, list):
+            return "Field 'ble.observations' must be a list"
+        if isinstance(observations, list) and len(observations) > 50:
+            return "Field 'ble.observations' exceeds the maximum of 50"
 
     return None
 

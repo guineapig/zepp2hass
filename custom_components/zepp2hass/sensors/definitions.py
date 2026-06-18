@@ -128,6 +128,28 @@ _DIAGNOSTIC_SENSORS: Final[list[SensorDef]] = [
         category=EntityCategory.DIAGNOSTIC,
     ),
     SensorDef(
+        json_path="request_correlation_id",
+        key="request_correlation_id",
+        name="Request Correlation ID",
+        icon="mdi:link-variant",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="location.record_time",
+        key="location_freshness_time",
+        name="Location Freshness Time",
+        icon="mdi:map-clock",
+        category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorDef(
+        json_path="ble.proximity",
+        key="ble_proximity",
+        name="BLE Coarse Proximity",
+        icon="mdi:bluetooth-connect",
+        category=EntityCategory.DIAGNOSTIC,
+        attributes_map={"observation_count": "ble.observation_count"},
+    ),
+    SensorDef(
         json_path="screen.status",
         key="screen_status",
         name="Screen Status",

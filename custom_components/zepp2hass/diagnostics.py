@@ -24,6 +24,15 @@ TO_REDACT = {
     "nickname",
     "userid",
     "user_id",
+    "webhook_id",
+    "url",
+    "full_url",
+    "ble",
+    "ble_addr",
+    "bleAddr",
+    "mac",
+    "device_id",
+    "source_app_device_id",
 }
 
 
@@ -63,8 +72,7 @@ async def async_get_config_entry_diagnostics(
             "data": redacted_entry_data,
         },
         "webhook": {
-            "url": entry_data.get("webhook_url", "N/A"),
-            "full_url": entry_data.get("webhook_full_url", "N/A"),
+            "configured": bool(entry_data.get("webhook_url")),
             "recent_payload_ids_count": len(entry_data.get("recent_payload_ids", [])),
             "duplicate_payload_count": entry_data.get("duplicate_payload_count", 0),
             "rate_window_request_count": len(entry_data.get("request_timestamps", [])),
