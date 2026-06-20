@@ -42,7 +42,8 @@ class RawDataSensor(ZeppSensorBase):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the entire raw payload as a single attribute."""
-        if not self._data:
+        payload = self.coordinator.latest_payload
+        if not payload:
             return {}
         # We wrap the entire payload inside 'raw_payload'
-        return {"raw_payload": self._data}
+        return {"raw_payload": payload}

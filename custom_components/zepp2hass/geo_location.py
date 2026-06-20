@@ -139,6 +139,14 @@ class ZeppGeolocationEvent(
             data[ATTR_LONGITUDE] = round(self.longitude, 5)
 
         optional_attributes = {
+            "record_time": self._first_value(
+                (
+                    "location.record_time",
+                    "geolocation.record_time",
+                    "geo_location.record_time",
+                    "record_time",
+                )
+            ),
             "status": self._status,
             "altitude": self._first_value(
                 (
@@ -176,6 +184,17 @@ class ZeppGeolocationEvent(
                     "geo_location.gnss",
                     "location.gnss",
                 )
+            ),
+            "heading": self._first_value(
+                (
+                    "compass.direction_angle",
+                    "compass.directionAngle",
+                    "compass.angle",
+                )
+            ),
+            "heading_direction": self._first_value(("compass.direction",)),
+            "heading_calibrated": self._first_value(
+                ("compass.status", "compass.calibrated")
             ),
         }
 

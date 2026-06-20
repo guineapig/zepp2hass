@@ -80,6 +80,8 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         # Cached computed data (invalidated on each update)
         self._sorted_workout_history: list[dict[str, Any]] | None = None
+        self.latest_payload: dict[str, Any] = {}
+        self._latest_finder_sections: dict[str, dict[str, Any]] = {}
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -163,6 +165,15 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     if key in compass_data:
                         compass_data["direction_angle"] = compass_data[key]
                         break
+            if "direction" not in compass_data and "direction_angle" in compass_data:
+                try:
+                    angle = float(compass_data["direction_angle"])
+                    labels = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+                    compass_data["direction"] = labels[
+                        int((angle + 22.5) // 45) % len(labels)
+                    ]
+                except (TypeError, ValueError):
+                    pass
             if "status" not in compass_data and "calibrated" in compass_data:
                 compass_data["status"] = compass_data["calibrated"]
 
@@ -186,8 +197,19 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # Inject the inferred state into the data payload
             battery_data["is_charging"] = getattr(self, "_is_charging", False)
 
-        # Delegate to parent to store data and notify listeners
-        super().async_set_updated_data(data)
+        self.latest_payload = data
+        for section in ("location", "geolocation", "geo_location", "compass"):
+            value = data.get(section)
+            if isinstance(value, dict):
+                self._latest_finder_sections[section] = value
+
+        entity_data = dict(data)
+        for section, value in self._latest_finder_sections.items():
+            entity_data.setdefault(section, value)
+
+        # Keep time-sensitive finder entities available across unrelated
+        # background payloads without changing the raw latest-payload view.
+        super().async_set_updated_data(entity_data)
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Return cached data (no polling - data pushed via webhook).

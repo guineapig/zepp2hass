@@ -19,6 +19,7 @@ CONF_BASE_URL: Final[str] = "base_url"
 
 # Webhook safety limits
 RATE_LIMIT_REQUESTS: Final[int] = 30
+LIVE_FINDER_RATE_LIMIT_REQUESTS: Final[int] = 75
 RATE_LIMIT_WINDOW_SECONDS: Final[int] = 60
 RECENT_PAYLOAD_ID_LIMIT: Final[int] = 200
 

@@ -34,6 +34,7 @@ from .const import (
     DEFAULT_MANUFACTURER,
     DEFAULT_MODEL,
     CONF_BASE_URL,
+    LIVE_FINDER_RATE_LIMIT_REQUESTS,
     RATE_LIMIT_REQUESTS,
     RATE_LIMIT_WINDOW_SECONDS,
     RECENT_PAYLOAD_ID_LIMIT,
@@ -57,6 +58,7 @@ _OBJECT_SECTIONS: frozenset[str] = frozenset(
         "device",
         "distance",
         "fat_burning",
+        "finder_session",
         "geolocation",
         "geo_location",
         "heart_rate",
@@ -86,6 +88,7 @@ _SCALAR_FIELDS: frozenset[str] = frozenset(
         "attempt_count",
         "is_wearing",
         "request_correlation_id",
+        "sensor_sync_interval_minutes",
     }
 )
 
@@ -110,14 +113,18 @@ async def _load_dashboard_template() -> str:
     return _DASHBOARD_TEMPLATE
 
 
-def _is_rate_limited(entry_data: dict[str, Any]) -> bool:
+def _is_rate_limited(
+    entry_data: dict[str, Any],
+    request_limit: int = RATE_LIMIT_REQUESTS,
+    bucket: str = "request_timestamps",
+) -> bool:
     """Return True when the entry exceeded its POST rate window."""
     now = time.monotonic()
-    timestamps: list[float] = entry_data.setdefault("request_timestamps", [])
+    timestamps: list[float] = entry_data.setdefault(bucket, [])
     window_start = now - RATE_LIMIT_WINDOW_SECONDS
     timestamps[:] = [stamp for stamp in timestamps if stamp >= window_start]
 
-    if len(timestamps) >= RATE_LIMIT_REQUESTS:
+    if len(timestamps) >= request_limit:
         return True
 
     timestamps.append(now)
@@ -450,19 +457,6 @@ def _create_webhook_handler(hass: HomeAssistant, entry_id: str):
 
         # Handle POST requests - process webhook payload
 
-        if _is_rate_limited(entry_data):
-            _LOGGER.warning("Rate limit exceeded for Zepp2Hass entry %s", entry_id)
-            return web.json_response(
-                {
-                    "error": "rate_limited",
-                    "message": (
-                        f"Maximum {RATE_LIMIT_REQUESTS} requests per "
-                        f"{RATE_LIMIT_WINDOW_SECONDS} seconds exceeded"
-                    ),
-                },
-                status=429,
-            )
-
         # Parse JSON payload
         try:
             payload = await request.json()
@@ -478,6 +472,29 @@ def _create_webhook_handler(hass: HomeAssistant, entry_id: str):
             return web.json_response(
                 {"error": "Invalid payload", "message": "Payload must be a JSON object"},
                 status=400,
+            )
+
+        request_limit = (
+            LIVE_FINDER_RATE_LIMIT_REQUESTS
+            if payload.get("kind") == "finder_live_snapshot"
+            else RATE_LIMIT_REQUESTS
+        )
+        rate_limit_bucket = (
+            "finder_request_timestamps"
+            if payload.get("kind") == "finder_live_snapshot"
+            else "request_timestamps"
+        )
+        if _is_rate_limited(entry_data, request_limit, rate_limit_bucket):
+            _LOGGER.warning("Rate limit exceeded for Zepp2Hass entry %s", entry_id)
+            return web.json_response(
+                {
+                    "error": "rate_limited",
+                    "message": (
+                        f"Maximum {request_limit} requests per "
+                        f"{RATE_LIMIT_WINDOW_SECONDS} seconds exceeded"
+                    ),
+                },
+                status=429,
             )
 
         validation_error = _validate_payload(payload)

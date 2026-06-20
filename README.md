@@ -262,7 +262,9 @@ Expected response:
 - Successful POST requests always return `{ "status": "ok" }`.
 - Duplicate POST requests with an already-seen payload `id` are ignored and still return `{ "status": "ok" }`.
 - Invalid JSON, non-object payloads, malformed known sections, or invalid coordinates return HTTP 400 with an error class and short message.
-- More than 30 POST requests per 60 seconds for one Zepp2Hass entry return HTTP 429 `rate_limited`.
+- Normal payloads allow 30 requests per 60 seconds. Combined
+  `finder_live_snapshot` payloads allow 75 requests per 60 seconds so a
+  user-started one-second location/heading session remains within the limit.
 - Unsupported sensor categories should be omitted from the payload or listed under `capabilities.unsupported`.
 - Temporarily unavailable categories should be omitted or listed under `capabilities.unavailable`.
 - Missing or unavailable metrics become unavailable/missing entities in Home Assistant; they must not be sent as misleading zero values.
