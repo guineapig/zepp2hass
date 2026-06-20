@@ -81,6 +81,7 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Cached computed data (invalidated on each update)
         self._sorted_workout_history: list[dict[str, Any]] | None = None
         self.latest_payload: dict[str, Any] = {}
+        self._latest_full_sensor_data: dict[str, Any] = {}
         self._latest_finder_sections: dict[str, dict[str, Any]] = {}
 
     @property
@@ -203,9 +204,12 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if isinstance(value, dict):
                 self._latest_finder_sections[section] = value
 
-        entity_data = dict(data)
+        if "last_update" in data:
+            self._latest_full_sensor_data = data
+
+        entity_data = _merge_payloads(self._latest_full_sensor_data, data)
         for section, value in self._latest_finder_sections.items():
-            entity_data.setdefault(section, value)
+            entity_data[section] = _merge_dicts(entity_data.get(section), value)
 
         # Keep time-sensitive finder entities available across unrelated
         # background payloads without changing the raw latest-payload view.
@@ -221,3 +225,25 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             Current cached data or empty dict
         """
         return self.data if self.data else {}
+
+
+def _merge_payloads(
+    base: dict[str, Any],
+    overlay: dict[str, Any],
+) -> dict[str, Any]:
+    """Merge partial finder payloads over the latest full sensor snapshot."""
+    result = dict(base)
+    for key, value in overlay.items():
+        if isinstance(value, dict):
+            result[key] = _merge_dicts(result.get(key), value)
+        else:
+            result[key] = value
+    return result
+
+
+def _merge_dicts(base: Any, overlay: dict[str, Any]) -> dict[str, Any]:
+    """Shallow-merge one payload section."""
+    return {
+        **(base if isinstance(base, dict) else {}),
+        **overlay,
+    }

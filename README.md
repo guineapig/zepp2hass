@@ -79,6 +79,17 @@ Profile/source diagnostics are exposed as `Profile ID`, `Profile Label`, `Profil
 
 App-open location payloads from `tt_zepp_app` are exposed as a measured watch `geo_location` entity, for example `geo_location.zepp_sarah_location`. Location data is not written to Tagestracker helpers by Zepp2Hass.
 
+The `geo_location` entity's state is Home Assistant's distance from the
+configured home location. For readable coordinates and heading, use the
+regular `Location Coordinates` sensor, whose state is
+`latitude, longitude` and whose attributes include heading, direction,
+calibration, timestamp, accuracy, and GNSS details.
+
+Live finder payloads are merged over the latest full sensor snapshot for
+entity updates, so frequent location/heading samples do not make battery,
+steps, heart rate, or other normal background entities unavailable. The Raw
+Data diagnostic still shows the most recently received payload unchanged.
+
 ---
 
 ## 🚀 Installation

@@ -33,6 +33,7 @@ from .user import UserInfoSensor
 from .webhook import WebhookUrlSensor
 from .sleep import SleepScoreSensor
 from .raw import RawDataSensor
+from .location import LocationCoordinatesSensor
 from .workout import (
     WorkoutHistorySensor,
     WorkoutLastSensor,
@@ -73,6 +74,7 @@ __all__ = [
     "WebhookUrlSensor",
     "SleepScoreSensor",
     "RawDataSensor",
+    "LocationCoordinatesSensor",
     "WorkoutHistorySensor",
     "WorkoutLastSensor",
     "WorkoutMinutesTodaySensor",
