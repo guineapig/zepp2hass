@@ -12,8 +12,8 @@ definitions_source = Path(
 
 assert '"debug"' in init_source
 assert "forbidden_debug_keys" in init_source
-assert '"watch_debug_snapshot"' in coordinator_source
 assert "self._latest_debug_data" in coordinator_source
+assert "if isinstance(debug_data, dict):" in coordinator_source
 assert 'json_path="debug.bridge_state"' in definitions_source
 assert 'json_path="debug.pending_request_count"' in definitions_source
 assert 'json_path="debug.last_command_status"' in definitions_source

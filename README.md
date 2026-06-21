@@ -93,11 +93,14 @@ Data diagnostic still shows the most recently received payload unchanged.
 ### Watch communication debug snapshots
 
 When `tt_watch_api` enables `runtime_settings.debug_mode`, `tt_zepp_app`
-sends compact `watch_debug_snapshot` payloads through the normal Zepp2Hass
-webhook. Zepp2Hass retains the latest debug block across later sensor
-snapshots and exposes diagnostic entities for the bridge state, AppService
-state, last sensor result, effective interval/settings source, current view,
-pending requests, acknowledgement queue size, and recent command result.
+includes a compact `debug` block in normal periodic sensor snapshots sent
+through the Zepp2Hass webhook. Manual diagnostics and configurations with
+sensor sync explicitly disabled may still send a standalone
+`watch_debug_snapshot`. Zepp2Hass retains the latest debug block across later
+sensor snapshots and exposes diagnostic entities for the bridge state,
+AppService state, last sensor result, effective interval/settings source,
+current view, pending requests, acknowledgement queue size, and recent
+command result.
 
 Debug snapshots contain status classes, timestamps, booleans, and counters.
 They do not contain Home Assistant tokens or URLs, free-text tracker values,

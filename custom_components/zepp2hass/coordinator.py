@@ -201,10 +201,7 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         self.latest_payload = data
         debug_data = data.get("debug")
-        if (
-            data.get("kind") == "watch_debug_snapshot"
-            and isinstance(debug_data, dict)
-        ):
+        if isinstance(debug_data, dict):
             self._latest_debug_data = debug_data
         for section in ("location", "geolocation", "geo_location", "compass"):
             value = data.get(section)
