@@ -56,6 +56,7 @@ _OBJECT_SECTIONS: frozenset[str] = frozenset(
         "capabilities",
         "compass",
         "device",
+        "debug",
         "distance",
         "fat_burning",
         "finder_session",
@@ -188,6 +189,28 @@ def _validate_payload(payload: dict[str, Any]) -> str | None:
             value = capabilities.get(key)
             if value is not None and not isinstance(value, list):
                 return f"Field 'capabilities.{key}' must be a list"
+
+    debug = payload.get("debug")
+    if isinstance(debug, dict):
+        forbidden_debug_keys = {
+            "token",
+            "url",
+            "request_body",
+            "latitude",
+            "longitude",
+            "coordinates",
+            "ble",
+            "free_text",
+            "medication",
+            "relationship",
+        }
+        for key, value in debug.items():
+            if key in forbidden_debug_keys:
+                return f"Field 'debug.{key}' is not allowed"
+            if isinstance(value, (dict, list)):
+                return f"Field 'debug.{key}' must be a scalar value"
+            if isinstance(value, str) and len(value) > 128:
+                return f"Field 'debug.{key}' exceeds the maximum length"
 
     for location_key in ("location", "geolocation", "geo_location"):
         location = payload.get(location_key)

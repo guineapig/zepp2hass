@@ -90,6 +90,20 @@ entity updates, so frequent location/heading samples do not make battery,
 steps, heart rate, or other normal background entities unavailable. The Raw
 Data diagnostic still shows the most recently received payload unchanged.
 
+### Watch communication debug snapshots
+
+When `tt_watch_api` enables `runtime_settings.debug_mode`, `tt_zepp_app`
+sends compact `watch_debug_snapshot` payloads through the normal Zepp2Hass
+webhook. Zepp2Hass retains the latest debug block across later sensor
+snapshots and exposes diagnostic entities for the bridge state, AppService
+state, last sensor result, effective interval/settings source, current view,
+pending requests, acknowledgement queue size, and recent command result.
+
+Debug snapshots contain status classes, timestamps, booleans, and counters.
+They do not contain Home Assistant tokens or URLs, free-text tracker values,
+precise coordinates, or BLE identifiers. Disable HA debug mode after
+troubleshooting to reduce background traffic.
+
 ---
 
 ## 🚀 Installation

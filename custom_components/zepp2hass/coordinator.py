@@ -83,6 +83,7 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.latest_payload: dict[str, Any] = {}
         self._latest_full_sensor_data: dict[str, Any] = {}
         self._latest_finder_sections: dict[str, dict[str, Any]] = {}
+        self._latest_debug_data: dict[str, Any] = {}
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -199,6 +200,12 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             battery_data["is_charging"] = getattr(self, "_is_charging", False)
 
         self.latest_payload = data
+        debug_data = data.get("debug")
+        if (
+            data.get("kind") == "watch_debug_snapshot"
+            and isinstance(debug_data, dict)
+        ):
+            self._latest_debug_data = debug_data
         for section in ("location", "geolocation", "geo_location", "compass"):
             value = data.get(section)
             if isinstance(value, dict):
@@ -210,6 +217,8 @@ class ZeppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         entity_data = _merge_payloads(self._latest_full_sensor_data, data)
         for section, value in self._latest_finder_sections.items():
             entity_data[section] = _merge_dicts(entity_data.get(section), value)
+        if self._latest_debug_data:
+            entity_data["debug"] = dict(self._latest_debug_data)
 
         # Keep time-sensitive finder entities available across unrelated
         # background payloads without changing the raw latest-payload view.
